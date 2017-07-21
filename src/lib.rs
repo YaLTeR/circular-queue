@@ -1,3 +1,6 @@
+use std::iter::{Chain, Rev};
+use std::slice::Iter;
+
 /// A circular buffer-like queue.
 ///
 /// Once the capacity is reached, pushing new items will overwrite old ones.
@@ -8,22 +11,65 @@ pub struct CircularQueue<T> {
 }
 
 impl<T> CircularQueue<T> {
-    /// Creates a new `CircularQueue`.
+    /// Constructs a new, empty `CircularQueue<T>`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the requested capacity is 0.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue: CircularQueue<i32> = CircularQueue::new(5);
+    /// ```
     #[inline]
     pub fn new(capacity: usize) -> Self {
+        if capacity == 0 {
+            panic!("capacity must be greater than 0");
+        }
+
         Self {
             data: Vec::with_capacity(capacity),
             insertion_index: 0,
         }
     }
 
-    /// Returns the current length of the queue.
+    /// Returns the current number of elements in the queue.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::new(5);
+    /// queue.push(1);
+    /// queue.push(2);
+    /// queue.push(3);
+    ///
+    /// assert_eq!(queue.len(), 3);
+    /// ```
     #[inline]
     pub fn len(&self) -> usize {
         self.data.len()
     }
 
     /// Clears the queue.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::new(5);
+    /// queue.push(1);
+    /// queue.push(2);
+    /// queue.push(3);
+    ///
+    /// queue.clear();
+    /// assert_eq!(queue.len(), 0);
+    /// ```
     #[inline]
     pub fn clear(&mut self) {
         self.data.clear();
@@ -33,6 +79,20 @@ impl<T> CircularQueue<T> {
     /// Pushes a new element into the queue.
     ///
     /// Once the capacity is reached, pushing new items will overwrite old ones.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::new(3);
+    /// queue.push(1);
+    /// queue.push(2);
+    /// queue.push(3);
+    /// queue.push(4);
+    ///
+    /// assert_eq!(queue.len(), 3);
+    /// ```
     pub fn push(&mut self, x: T) {
         if self.data.len() < self.data.capacity() {
             self.data.push(x);
@@ -46,61 +106,42 @@ impl<T> CircularQueue<T> {
     /// Returns an iterator over the queue's contents.
     ///
     /// The iterator goes from the most recently pushed items to the oldest ones.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::new(3);
+    /// queue.push(1);
+    /// queue.push(2);
+    /// queue.push(3);
+    /// queue.push(4);
+    ///
+    /// let mut iter = queue.iter();
+    ///
+    /// assert_eq!(iter.next(), Some(&4));
+    /// assert_eq!(iter.next(), Some(&3));
+    /// assert_eq!(iter.next(), Some(&2));
+    /// ```
     #[inline]
-    pub fn iter<'a>(&'a self) -> CircularQueueIter<'a, T> {
-        CircularQueueIter::new(self)
-    }
-}
-
-/// Iterator over the `CircularQueue`.
-#[derive(Clone, Debug)]
-pub struct CircularQueueIter<'a, T: 'a> {
-    data: &'a [T],
-    index: usize,
-    output: usize,
-}
-
-impl<'a, T: 'a> CircularQueueIter<'a, T> {
-    #[inline]
-    fn new(queue: &'a CircularQueue<T>) -> Self {
-        Self {
-            data: &queue.data,
-            index: queue.insertion_index,
-            output: 0,
-        }
-    }
-}
-
-impl<'a, T: 'a> Iterator for CircularQueueIter<'a, T> {
-    type Item = &'a T;
-
-    #[inline]
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.output == self.data.len() {
-            None
-        } else {
-            self.index = circular_decrease(self.index, self.data.len());
-            self.output += 1;
-
-            Some(&self.data[self.index])
-        }
-    }
-}
-
-#[inline]
-fn circular_decrease(value: usize, max: usize) -> usize {
-    if max == 0 {
-        0
-    } else if value == 0 {
-        max - 1
-    } else {
-        value - 1
+    pub fn iter<'a>(&'a self) -> Chain<Rev<Iter<'a, T>>, Rev<Iter<'a, T>>> {
+        self.data[0..self.insertion_index]
+            .iter()
+            .rev()
+            .chain(self.data[self.insertion_index..].iter().rev())
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    #[should_panic]
+    fn zero_capacity() {
+        let _ = CircularQueue::<i32>::new(0);
+    }
 
     #[test]
     fn empty_queue() {
@@ -117,7 +158,8 @@ mod tests {
         q.push(3);
 
         assert_eq!(3, q.len());
-        assert_eq!(&[3, 2, 1], q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
+        assert_eq!(&[3, 2, 1],
+                   q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
     }
 
     #[test]
@@ -130,7 +172,8 @@ mod tests {
         q.push(5);
 
         assert_eq!(5, q.len());
-        assert_eq!(&[5, 4, 3, 2, 1], q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
+        assert_eq!(&[5, 4, 3, 2, 1],
+                   q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
     }
 
     #[test]
@@ -145,7 +188,8 @@ mod tests {
         q.push(7);
 
         assert_eq!(5, q.len());
-        assert_eq!(&[7, 6, 5, 4, 3], q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
+        assert_eq!(&[7, 6, 5, 4, 3],
+                   q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
     }
 
     #[test]
@@ -169,6 +213,7 @@ mod tests {
         q.push(3);
 
         assert_eq!(3, q.len());
-        assert_eq!(&[3, 2, 1], q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
+        assert_eq!(&[3, 2, 1],
+                   q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
     }
 }
