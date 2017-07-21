@@ -95,6 +95,12 @@ impl<T> CircularQueue<T> {
     /// queue.push(4);
     ///
     /// assert_eq!(queue.len(), 3);
+    ///
+    /// let mut iter = queue.iter();
+    ///
+    /// assert_eq!(iter.next(), Some(&4));
+    /// assert_eq!(iter.next(), Some(&3));
+    /// assert_eq!(iter.next(), Some(&2));
     /// ```
     pub fn push(&mut self, x: T) {
         if self.data.len() < self.data.capacity() {
