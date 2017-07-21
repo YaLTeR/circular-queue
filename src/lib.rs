@@ -1,9 +1,33 @@
+//! A circular buffer-like queue.
+//!
+//! The `CircularQueue<T>` is created with a set capacity, then items are pushed in. When the queue runs out of capacity, newer items start overwriting the old ones, starting from the oldest.
+//!
+//! There's a built-in iterator that goes from the newest items to the oldest ones.
+//!
+//! # Examples
+//!
+//! ```
+//! use circular_queue::CircularQueue;
+//!
+//! let mut queue = CircularQueue::new(3);
+//! queue.push(1);
+//! queue.push(2);
+//! queue.push(3);
+//! queue.push(4);
+//!
+//! assert_eq!(queue.len(), 3);
+//!
+//! let mut iter = queue.iter();
+//!
+//! assert_eq!(iter.next(), Some(&4));
+//! assert_eq!(iter.next(), Some(&3));
+//! assert_eq!(iter.next(), Some(&2));
+//! ```
+
 use std::iter::{Chain, Rev};
 use std::slice::Iter as SliceIter;
 
 /// A circular buffer-like queue.
-///
-/// Once the capacity is reached, pushing new items will overwrite old ones.
 #[derive(Clone, Debug)]
 pub struct CircularQueue<T> {
     data: Vec<T>,
