@@ -26,7 +26,7 @@
 //! ```
 
 use std::iter::{Chain, Rev};
-use std::slice::Iter as SliceIter;
+use std::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 
 /// A circular buffer-like queue.
 #[derive(Clone, Debug)]
@@ -37,6 +37,9 @@ pub struct CircularQueue<T> {
 
 /// An iterator over `CircularQueue<T>`.
 pub type Iter<'a, T> = Chain<Rev<SliceIter<'a, T>>, Rev<SliceIter<'a, T>>>;
+
+/// A mutable iterator over `CircularQueue<T>`.
+pub type IterMut<'a, T> = Chain<Rev<SliceIterMut<'a, T>>, Rev<SliceIterMut<'a, T>>>;
 
 impl<T> CircularQueue<T> {
     /// Constructs a new, empty `CircularQueue<T>`.
@@ -175,10 +178,35 @@ impl<T> CircularQueue<T> {
     /// ```
     #[inline]
     pub fn iter<'a>(&'a self) -> Iter<'a, T> {
-        self.data[0..self.insertion_index]
-            .iter()
-            .rev()
-            .chain(self.data[self.insertion_index..].iter().rev())
+        let (a, b) = self.data.split_at(self.insertion_index);
+        a.iter().rev().chain(b.iter().rev())
+    }
+
+    /// Returns a mutable iterator over the queue's contents.
+    ///
+    /// The iterator goes from the most recently pushed items to the oldest ones.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::new(3);
+    /// queue.push(1);
+    /// queue.push(2);
+    /// queue.push(3);
+    /// queue.push(4);
+    ///
+    /// let mut iter = queue.iter_mut();
+    ///
+    /// assert_eq!(iter.next(), Some(&mut 4));
+    /// assert_eq!(iter.next(), Some(&mut 3));
+    /// assert_eq!(iter.next(), Some(&mut 2));
+    /// ```
+    #[inline]
+    pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, T> {
+        let (a, b) = self.data.split_at_mut(self.insertion_index);
+        a.iter_mut().rev().chain(b.iter_mut().rev())
     }
 }
 
@@ -268,5 +296,24 @@ mod tests {
 
         let res: Vec<_> = q.iter().map(|&x| x).collect();
         assert_eq!(res, [3, 2, 1]);
+    }
+
+    #[test]
+    fn mutable_iterator() {
+        let mut q = CircularQueue::new(5);
+        q.push(1);
+        q.push(2);
+        q.push(3);
+        q.push(4);
+        q.push(5);
+        q.push(6);
+        q.push(7);
+
+        for x in q.iter_mut() {
+            *x *= 2;
+        }
+
+        let res: Vec<_> = q.iter().map(|&x| x).collect();
+        assert_eq!(res, [14, 12, 10, 8, 6]);
     }
 }
