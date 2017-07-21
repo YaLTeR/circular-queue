@@ -1,6 +1,7 @@
 //! A circular buffer-like queue.
 //!
-//! The `CircularQueue<T>` is created with a set capacity, then items are pushed in. When the queue runs out of capacity, newer items start overwriting the old ones, starting from the oldest.
+//! The `CircularQueue<T>` is created with a set capacity, then items are pushed in. When the queue
+//! runs out of capacity, newer items start overwriting the old ones, starting from the oldest.
 //!
 //! There's a built-in iterator that goes from the newest items to the oldest ones.
 //!
