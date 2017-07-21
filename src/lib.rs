@@ -1,5 +1,5 @@
 use std::iter::{Chain, Rev};
-use std::slice::Iter;
+use std::slice::Iter as SliceIter;
 
 /// A circular buffer-like queue.
 ///
@@ -9,6 +9,9 @@ pub struct CircularQueue<T> {
     data: Vec<T>,
     insertion_index: usize,
 }
+
+/// An iterator over `CircularQueue<T>`.
+pub type Iter<'a, T> = Chain<Rev<SliceIter<'a, T>>, Rev<SliceIter<'a, T>>>;
 
 impl<T> CircularQueue<T> {
     /// Constructs a new, empty `CircularQueue<T>`.
@@ -125,7 +128,7 @@ impl<T> CircularQueue<T> {
     /// assert_eq!(iter.next(), Some(&2));
     /// ```
     #[inline]
-    pub fn iter<'a>(&'a self) -> Chain<Rev<Iter<'a, T>>, Rev<Iter<'a, T>>> {
+    pub fn iter<'a>(&'a self) -> Iter<'a, T> {
         self.data[0..self.insertion_index]
             .iter()
             .rev()
