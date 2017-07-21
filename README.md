@@ -1,5 +1,7 @@
 # circular-queue
 
+[Documentation](https://docs.rs/circular-queue)
+
 A circular buffer-like queue container. Created with a set capacity. When pushing new items over capacity, old ones get overwritten. Supports iteration in newest to oldest order.
 
 ## License
