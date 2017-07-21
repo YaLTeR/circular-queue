@@ -1,0 +1,6 @@
+[package]
+name = "circular-queue"
+version = "0.1.0"
+authors = ["Ivan Molodetskikh <yalterz@gmail.com>"]
+
+[dependencies]

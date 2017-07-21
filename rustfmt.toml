@@ -1,0 +1,4 @@
+chain_indent = "Visual"
+fn_args_layout = "Visual"
+fn_call_style = "Visual"
+reorder_imported_names = true
