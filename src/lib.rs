@@ -150,7 +150,7 @@ mod tests {
     fn empty_queue() {
         let q = CircularQueue::<i32>::new(5);
 
-        assert_eq!(None, q.iter().next());
+        assert_eq!(q.iter().next(), None);
     }
 
     #[test]
@@ -160,9 +160,10 @@ mod tests {
         q.push(2);
         q.push(3);
 
-        assert_eq!(3, q.len());
-        assert_eq!(&[3, 2, 1],
-                   q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
+        assert_eq!(q.len(), 3);
+
+        let res: Vec<_> = q.iter().map(|&x| x).collect();
+        assert_eq!(res, [3, 2, 1]);
     }
 
     #[test]
@@ -174,9 +175,10 @@ mod tests {
         q.push(4);
         q.push(5);
 
-        assert_eq!(5, q.len());
-        assert_eq!(&[5, 4, 3, 2, 1],
-                   q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
+        assert_eq!(q.len(), 5);
+
+        let res: Vec<_> = q.iter().map(|&x| x).collect();
+        assert_eq!(res, [5, 4, 3, 2, 1]);
     }
 
     #[test]
@@ -190,9 +192,10 @@ mod tests {
         q.push(6);
         q.push(7);
 
-        assert_eq!(5, q.len());
-        assert_eq!(&[7, 6, 5, 4, 3],
-                   q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
+        assert_eq!(q.len(), 5);
+
+        let res: Vec<_> = q.iter().map(|&x| x).collect();
+        assert_eq!(res, [7, 6, 5, 4, 3]);
     }
 
     #[test]
@@ -208,15 +211,16 @@ mod tests {
 
         q.clear();
 
-        assert_eq!(0, q.len());
-        assert_eq!(None, q.iter().next());
+        assert_eq!(q.len(), 0);
+        assert_eq!(q.iter().next(), None);
 
         q.push(1);
         q.push(2);
         q.push(3);
 
-        assert_eq!(3, q.len());
-        assert_eq!(&[3, 2, 1],
-                   q.iter().map(|&x| x).collect::<Vec<_>>().as_slice());
+        assert_eq!(q.len(), 3);
+
+        let res: Vec<_> = q.iter().map(|&x| x).collect();
+        assert_eq!(res, [3, 2, 1]);
     }
 }
