@@ -83,6 +83,21 @@ impl<T> CircularQueue<T> {
         self.data.len()
     }
 
+    /// Returns the capacity of the queue.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let queue: CircularQueue<i32> = CircularQueue::new(5);
+    /// assert_eq!(queue.capacity(), 5);
+    /// ```
+    #[inline]
+    pub fn capacity(&self) -> usize {
+        self.data.capacity()
+    }
+
     /// Clears the queue.
     ///
     /// # Examples
