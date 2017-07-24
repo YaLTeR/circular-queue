@@ -10,7 +10,7 @@
 //! ```
 //! use circular_queue::CircularQueue;
 //!
-//! let mut queue = CircularQueue::new(3);
+//! let mut queue = CircularQueue::with_capacity(3);
 //! queue.push(1);
 //! queue.push(2);
 //! queue.push(3);
@@ -43,7 +43,7 @@ pub type Iter<'a, T> = Chain<Rev<SliceIter<'a, T>>, Rev<SliceIter<'a, T>>>;
 pub type IterMut<'a, T> = Chain<Rev<SliceIterMut<'a, T>>, Rev<SliceIterMut<'a, T>>>;
 
 impl<T> CircularQueue<T> {
-    /// Constructs a new, empty `CircularQueue<T>`.
+    /// Constructs a new, empty `CircularQueue<T>` with the requested capacity.
     ///
     /// # Panics
     ///
@@ -54,10 +54,10 @@ impl<T> CircularQueue<T> {
     /// ```
     /// use circular_queue::CircularQueue;
     ///
-    /// let mut queue: CircularQueue<i32> = CircularQueue::new(5);
+    /// let mut queue: CircularQueue<i32> = CircularQueue::with_capacity(5);
     /// ```
     #[inline]
-    pub fn new(capacity: usize) -> Self {
+    pub fn with_capacity(capacity: usize) -> Self {
         if capacity == 0 {
             panic!("capacity must be greater than 0");
         }
@@ -76,7 +76,7 @@ impl<T> CircularQueue<T> {
     /// ```
     /// use circular_queue::CircularQueue;
     ///
-    /// let mut queue = CircularQueue::new(5);
+    /// let mut queue = CircularQueue::with_capacity(5);
     /// queue.push(1);
     /// queue.push(2);
     /// queue.push(3);
@@ -95,7 +95,7 @@ impl<T> CircularQueue<T> {
     /// ```
     /// use circular_queue::CircularQueue;
     ///
-    /// let queue: CircularQueue<i32> = CircularQueue::new(5);
+    /// let queue: CircularQueue<i32> = CircularQueue::with_capacity(5);
     /// assert_eq!(queue.capacity(), 5);
     /// ```
     #[inline]
@@ -110,7 +110,7 @@ impl<T> CircularQueue<T> {
     /// ```
     /// use circular_queue::CircularQueue;
     ///
-    /// let mut queue = CircularQueue::new(5);
+    /// let mut queue = CircularQueue::with_capacity(5);
     /// queue.push(1);
     /// queue.push(2);
     /// queue.push(3);
@@ -133,7 +133,7 @@ impl<T> CircularQueue<T> {
     /// ```
     /// use circular_queue::CircularQueue;
     ///
-    /// let mut queue = CircularQueue::new(3);
+    /// let mut queue = CircularQueue::with_capacity(3);
     /// queue.push(1);
     /// queue.push(2);
     /// queue.push(3);
@@ -166,7 +166,7 @@ impl<T> CircularQueue<T> {
     /// ```
     /// use circular_queue::CircularQueue;
     ///
-    /// let mut queue = CircularQueue::new(3);
+    /// let mut queue = CircularQueue::with_capacity(3);
     /// queue.push(1);
     /// queue.push(2);
     /// queue.push(3);
@@ -193,7 +193,7 @@ impl<T> CircularQueue<T> {
     /// ```
     /// use circular_queue::CircularQueue;
     ///
-    /// let mut queue = CircularQueue::new(3);
+    /// let mut queue = CircularQueue::with_capacity(3);
     /// queue.push(1);
     /// queue.push(2);
     /// queue.push(3);
@@ -219,19 +219,19 @@ mod tests {
     #[test]
     #[should_panic]
     fn zero_capacity() {
-        let _ = CircularQueue::<i32>::new(0);
+        let _ = CircularQueue::<i32>::with_capacity(0);
     }
 
     #[test]
     fn empty_queue() {
-        let q = CircularQueue::<i32>::new(5);
+        let q = CircularQueue::<i32>::with_capacity(5);
 
         assert_eq!(q.iter().next(), None);
     }
 
     #[test]
     fn partially_full_queue() {
-        let mut q = CircularQueue::new(5);
+        let mut q = CircularQueue::with_capacity(5);
         q.push(1);
         q.push(2);
         q.push(3);
@@ -244,7 +244,7 @@ mod tests {
 
     #[test]
     fn full_queue() {
-        let mut q = CircularQueue::new(5);
+        let mut q = CircularQueue::with_capacity(5);
         q.push(1);
         q.push(2);
         q.push(3);
@@ -259,7 +259,7 @@ mod tests {
 
     #[test]
     fn over_full_queue() {
-        let mut q = CircularQueue::new(5);
+        let mut q = CircularQueue::with_capacity(5);
         q.push(1);
         q.push(2);
         q.push(3);
@@ -276,7 +276,7 @@ mod tests {
 
     #[test]
     fn clear() {
-        let mut q = CircularQueue::new(5);
+        let mut q = CircularQueue::with_capacity(5);
         q.push(1);
         q.push(2);
         q.push(3);
@@ -302,7 +302,7 @@ mod tests {
 
     #[test]
     fn mutable_iterator() {
-        let mut q = CircularQueue::new(5);
+        let mut q = CircularQueue::with_capacity(5);
         q.push(1);
         q.push(2);
         q.push(3);
@@ -321,7 +321,7 @@ mod tests {
 
     #[test]
     fn zero_sized() {
-        let mut q = CircularQueue::new(3);
+        let mut q = CircularQueue::with_capacity(3);
         assert_eq!(q.capacity(), 3);
 
         q.push(());
