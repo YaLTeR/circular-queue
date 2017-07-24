@@ -90,6 +90,24 @@ impl<T> CircularQueue<T> {
         self.data.len()
     }
 
+    /// Returns `true` if the queue contains no elements.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::with_capacity(5);
+    /// assert!(queue.is_empty());
+    ///
+    /// queue.push(1);
+    /// assert!(!queue.is_empty());
+    /// ```
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+
     /// Returns the capacity of the queue.
     ///
     /// # Examples
