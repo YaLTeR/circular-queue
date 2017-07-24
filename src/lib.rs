@@ -32,6 +32,7 @@ use std::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 #[derive(Clone, Debug)]
 pub struct CircularQueue<T> {
     data: Vec<T>,
+    capacity: usize,
     insertion_index: usize,
 }
 
@@ -63,6 +64,7 @@ impl<T> CircularQueue<T> {
 
         Self {
             data: Vec::with_capacity(capacity),
+            capacity,
             insertion_index: 0,
         }
     }
@@ -98,7 +100,7 @@ impl<T> CircularQueue<T> {
     /// ```
     #[inline]
     pub fn capacity(&self) -> usize {
-        self.data.capacity()
+        self.capacity
     }
 
     /// Clears the queue.
@@ -146,13 +148,13 @@ impl<T> CircularQueue<T> {
     /// assert_eq!(iter.next(), Some(&2));
     /// ```
     pub fn push(&mut self, x: T) {
-        if self.data.len() < self.data.capacity() {
+        if self.data.len() < self.capacity() {
             self.data.push(x);
         } else {
             self.data[self.insertion_index] = x;
         }
 
-        self.insertion_index = (self.insertion_index + 1) % self.data.capacity();
+        self.insertion_index = (self.insertion_index + 1) % self.capacity();
     }
 
     /// Returns an iterator over the queue's contents.
@@ -315,5 +317,24 @@ mod tests {
 
         let res: Vec<_> = q.iter().map(|&x| x).collect();
         assert_eq!(res, [14, 12, 10, 8, 6]);
+    }
+
+    #[test]
+    fn zero_sized() {
+        let mut q = CircularQueue::new(3);
+        assert_eq!(q.capacity(), 3);
+
+        q.push(());
+        q.push(());
+        q.push(());
+        q.push(());
+
+        assert_eq!(q.len(), 3);
+
+        let mut iter = q.iter();
+        assert_eq!(iter.next(), Some(&()));
+        assert_eq!(iter.next(), Some(&()));
+        assert_eq!(iter.next(), Some(&()));
+        assert_eq!(iter.next(), None);
     }
 }
