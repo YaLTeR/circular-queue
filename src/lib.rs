@@ -32,6 +32,8 @@ use std::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 #[derive(Clone, Debug)]
 pub struct CircularQueue<T> {
     data: Vec<T>,
+    // Using our own capacity instead of the one stored in Vec to ensure consistent behavior with
+    // zero-sized types.
     capacity: usize,
     insertion_index: usize,
 }
