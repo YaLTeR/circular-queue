@@ -199,7 +199,7 @@ impl<T> CircularQueue<T> {
     /// assert_eq!(iter.next(), Some(&2));
     /// ```
     #[inline]
-    pub fn iter<'a>(&'a self) -> Iter<'a, T> {
+    pub fn iter(&self) -> Iter<T> {
         let (a, b) = self.data.split_at(self.insertion_index);
         a.iter().rev().chain(b.iter().rev())
     }
@@ -226,7 +226,7 @@ impl<T> CircularQueue<T> {
     /// assert_eq!(iter.next(), Some(&mut 2));
     /// ```
     #[inline]
-    pub fn iter_mut<'a>(&'a mut self) -> IterMut<'a, T> {
+    pub fn iter_mut(&mut self) -> IterMut<T> {
         let (a, b) = self.data.split_at_mut(self.insertion_index);
         a.iter_mut().rev().chain(b.iter_mut().rev())
     }
