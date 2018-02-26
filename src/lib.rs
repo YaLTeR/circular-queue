@@ -366,6 +366,32 @@ mod tests {
     }
 
     #[test]
+    fn popping_then_pushing_out_of_scope() {
+        let mut q = CircularQueue::with_capacity(2);
+        q.push(1);
+        q.push(2);
+        q.push(3);
+
+        let res3 = q.pop();
+        let res2 = q.pop();
+        let res1 = q.pop();
+        let res0 = q.pop();
+        assert_eq!(res3, Some(3));
+        assert_eq!(res2, Some(2));
+        assert_eq!(res1, None);
+        assert_eq!(res0, None);
+        
+        q.push(4);
+        q.push(5);
+        q.push(6);
+
+        assert_eq!(res3, Some(3));
+        assert_eq!(res2, Some(2));
+        assert_eq!(res1, None);
+        assert_eq!(res0, None);
+    }
+
+    #[test]
     fn popping_then_pushing() {
         let mut q = CircularQueue::with_capacity(5);
         q.push(1);
