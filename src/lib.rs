@@ -25,6 +25,8 @@
 //! assert_eq!(iter.next(), Some(&2));
 //! ```
 
+#![doc(html_root_url = "https://docs.rs/circular-queue/0.2.0")]
+
 use std::iter::{Chain, Rev};
 use std::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 

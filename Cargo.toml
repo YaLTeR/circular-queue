@@ -1,6 +1,6 @@
 [package]
 name = "circular-queue"
-version = "0.2.0"
+version = "0.2.0" # remember to update html_root_url
 authors = ["Ivan Molodetskikh <yalterz@gmail.com>"]
 description = "A circular buffer-like queue."
 license = "MIT/Apache-2.0"
