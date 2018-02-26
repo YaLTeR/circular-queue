@@ -205,7 +205,9 @@ impl<T> CircularQueue<T> {
     /// assert_eq!(queue.pop(), None);
     /// 
     /// ```
-    pub fn pop(&mut self) -> Option<T> {
+    pub fn pop(&mut self) -> Option<T>
+        where T: Copy
+    {
         if self.data.len() == 0 {
             None
         } else if self.data.len() < self.capacity() {
@@ -365,31 +367,31 @@ mod tests {
         assert_eq!(res, [3, 2, 1]);
     }
 
-    #[test]
-    fn popping_then_pushing_out_of_scope() {
-        let mut q = CircularQueue::with_capacity(2);
-        q.push(1);
-        q.push(2);
-        q.push(3);
+    // #[test]
+    // fn popping_then_pushing_out_of_scope() {
+    //     // should fail to compile !!!
+    //     let mut q = CircularQueue::with_capacity(2);
+    //     q.push(String::from("1"));
+    //     q.push(String::from("2"));
+    //     q.push(String::from("3"));
 
-        let res3 = q.pop();
-        let res2 = q.pop();
-        let res1 = q.pop();
-        let res0 = q.pop();
-        assert_eq!(res3, Some(3));
-        assert_eq!(res2, Some(2));
-        assert_eq!(res1, None);
-        assert_eq!(res0, None);
+    //     let res3 = q.pop();
+    //     let res2 = q.pop();
+    //     let res1 = q.pop();
+    //     let res0 = q.pop();
+    //     assert_eq!(res3, Some(String::from("3")));
+    //     assert_eq!(res2, Some(String::from("2")));
+    //     assert_eq!(res1, None);
+    //     assert_eq!(res0, None);
         
-        q.push(4);
-        q.push(5);
-        q.push(6);
-
-        assert_eq!(res3, Some(3));
-        assert_eq!(res2, Some(2));
-        assert_eq!(res1, None);
-        assert_eq!(res0, None);
-    }
+    //     q.push(String::from("4"));
+    //     q.push(String::from("5"));
+    //     q.push(String::from("6"));
+    //     assert_eq!(res3, Some(String::from("3")));
+    //     assert_eq!(res2, Some(String::from("2")));
+    //     assert_eq!(res1, None);
+    //     assert_eq!(res0, None);
+    // }
 
     #[test]
     fn popping_then_pushing() {
