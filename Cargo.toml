@@ -11,4 +11,8 @@ repository = "https://github.com/YaLTeR/circular-queue"
 keywords = ["circular", "buffer", "ring", "queue", "container"]
 categories = ["data-structures"]
 
+[badges]
+travis-ci = { repository = "YaLTeR/circular-queue" }
+appveyor = { repository = "YaLTeR/circular-queue" }
+
 [dependencies]
