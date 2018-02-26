@@ -176,6 +176,9 @@ impl<T> CircularQueue<T> {
         } else {
             self.data[self.insertion_index] = x;
         }
+        if self.reverse_idx > 0 {
+            self.reverse_idx -= 1;
+        }
         self.insertion_index = (self.insertion_index + 1) % self.capacity();
     }
 
@@ -205,18 +208,16 @@ impl<T> CircularQueue<T> {
     pub fn pop(&mut self) -> Option<T> {
         if self.data.len() == 0 {
             None
+        } else if self.data.len() < self.capacity() {
+            self.data.pop()
         } else {
-            if self.data.len() < self.capacity() {
-                self.data.pop()
-            } else {
+            if self.reverse_idx == self.capacity() { None }
+            else {
                 self.reverse_idx += 1;
-                if self.reverse_idx > self.capacity() { None }
-                else {
-                    self.insertion_index += self.capacity - 1;
-                    self.insertion_index %= self.capacity;
-                    unsafe {
-                        Some(ptr::read(self.data.get_unchecked(self.insertion_index)))
-                    }
+                self.insertion_index += self.capacity - 1;
+                self.insertion_index %= self.capacity;
+                unsafe {
+                    Some(ptr::read(self.data.get_unchecked(self.insertion_index)))
                 }
             }
         }
@@ -363,6 +364,53 @@ mod tests {
 
         let res: Vec<_> = q.iter().map(|&x| x).collect();
         assert_eq!(res, [3, 2, 1]);
+    }
+
+    #[test]
+    fn popping_then_pushing() {
+        let mut q = CircularQueue::with_capacity(5);
+        q.push(1);
+        q.push(2);
+        q.push(3);
+        q.push(4);
+        q.push(5);
+        q.push(6);
+        q.push(7);
+
+        let res = q.pop();
+        assert_eq!(res, Some(7));
+        let res = q.pop();
+        assert_eq!(res, Some(6));
+        let res = q.pop();
+        assert_eq!(res, Some(5));
+        let res = q.pop();
+        assert_eq!(res, Some(4));
+        let res = q.pop();
+        assert_eq!(res, Some(3));
+        let res = q.pop();
+        assert_eq!(res, None);
+
+        q.push(1);
+        q.push(2);
+        q.push(3);
+        q.push(4);
+        q.push(5);
+        q.push(6);
+        q.push(7);
+
+        let res = q.pop();
+        assert_eq!(res, Some(7));
+        let res = q.pop();
+        assert_eq!(res, Some(6));
+        let res = q.pop();
+        assert_eq!(res, Some(5));
+        let res = q.pop();
+        assert_eq!(res, Some(4));
+        let res = q.pop();
+        assert_eq!(res, Some(3));
+        let res = q.pop();
+        assert_eq!(res, None);
+
     }
 
     #[test]
