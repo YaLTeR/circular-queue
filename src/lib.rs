@@ -25,6 +25,7 @@
 //! assert_eq!(iter.next(), Some(&2));
 //! ```
 
+use std::ptr;
 use std::iter::{Chain, Rev};
 use std::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 
@@ -36,6 +37,7 @@ pub struct CircularQueue<T> {
     // zero-sized types.
     capacity: usize,
     insertion_index: usize,
+    reverse_idx: usize,
 }
 
 /// An iterator over `CircularQueue<T>`.
@@ -68,6 +70,7 @@ impl<T> CircularQueue<T> {
             data: Vec::with_capacity(capacity),
             capacity,
             insertion_index: 0,
+            reverse_idx: 0,
         }
     }
 
@@ -173,8 +176,50 @@ impl<T> CircularQueue<T> {
         } else {
             self.data[self.insertion_index] = x;
         }
-
         self.insertion_index = (self.insertion_index + 1) % self.capacity();
+    }
+
+    /// Pops the elements from the queue(LIFO).
+    ///
+    /// Pops at max self.capacity number of items.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::with_capacity(3);
+    /// queue.push(1);
+    /// queue.push(2);
+    /// queue.push(3);
+    /// queue.push(4);
+    ///
+    /// assert_eq!(queue.len(), 3);
+    ///
+    /// assert_eq!(queue.pop(), Some(4));
+    /// assert_eq!(queue.pop(), Some(3));
+    /// assert_eq!(queue.pop(), Some(2));
+    /// assert_eq!(queue.pop(), None);
+    /// 
+    /// ```
+    pub fn pop(&mut self) -> Option<T> {
+        if self.data.len() == 0 {
+            None
+        } else {
+            if self.data.len() < self.capacity() {
+                self.data.pop()
+            } else {
+                self.reverse_idx += 1;
+                if self.reverse_idx > self.capacity() { None }
+                else {
+                    self.insertion_index += self.capacity - 1;
+                    self.insertion_index %= self.capacity;
+                    unsafe {
+                        Some(ptr::read(self.data.get_unchecked(self.insertion_index)))
+                    }
+                }
+            }
+        }
     }
 
     /// Returns an iterator over the queue's contents.
@@ -318,6 +363,31 @@ mod tests {
 
         let res: Vec<_> = q.iter().map(|&x| x).collect();
         assert_eq!(res, [3, 2, 1]);
+    }
+
+    #[test]
+    fn popping() {
+        let mut q = CircularQueue::with_capacity(5);
+        q.push(1);
+        q.push(2);
+        q.push(3);
+        q.push(4);
+        q.push(5);
+        q.push(6);
+        q.push(7);
+
+        let res = q.pop();
+        assert_eq!(res, Some(7));
+        let res = q.pop();
+        assert_eq!(res, Some(6));
+        let res = q.pop();
+        assert_eq!(res, Some(5));
+        let res = q.pop();
+        assert_eq!(res, Some(4));
+        let res = q.pop();
+        assert_eq!(res, Some(3));
+        let res = q.pop();
+        assert_eq!(res, None);
     }
 
     #[test]
