@@ -210,15 +210,14 @@ impl<T> CircularQueue<T> {
             None
         } else if self.data.len() < self.capacity() {
             self.data.pop()
+        } else if self.reverse_idx == self.capacity() {
+            None
         } else {
-            if self.reverse_idx == self.capacity() { None }
-            else {
-                self.reverse_idx += 1;
-                self.insertion_index += self.capacity - 1;
-                self.insertion_index %= self.capacity;
-                unsafe {
-                    Some(ptr::read(self.data.get_unchecked(self.insertion_index)))
-                }
+            self.reverse_idx += 1;
+            self.insertion_index += self.capacity - 1;
+            self.insertion_index %= self.capacity;
+            unsafe {
+                Some(ptr::read(self.data.get_unchecked(self.insertion_index)))
             }
         }
     }
