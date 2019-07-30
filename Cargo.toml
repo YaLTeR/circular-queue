@@ -4,6 +4,7 @@ version = "0.2.0" # remember to update html_root_url
 authors = ["Ivan Molodetskikh <yalterz@gmail.com>"]
 description = "A circular buffer-like queue."
 license = "MIT/Apache-2.0"
+build = "build.rs"
 
 readme = "README.md"
 documentation = "https://docs.rs/circular-queue"
@@ -15,4 +16,5 @@ categories = ["data-structures"]
 travis-ci = { repository = "YaLTeR/circular-queue" }
 appveyor = { repository = "YaLTeR/circular-queue" }
 
-[dependencies]
+[build-dependencies]
+version_check = "0.9"

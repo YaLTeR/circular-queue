@@ -25,14 +25,23 @@
 //! assert_eq!(iter.next(), Some(&2));
 //! ```
 
-#![no_std]
+#![cfg_attr(has_extern_crate_alloc, no_std)]
 #![doc(html_root_url = "https://docs.rs/circular-queue/0.2.0")]
 
+#[cfg(has_extern_crate_alloc)]
 extern crate alloc;
 
+#[cfg(has_extern_crate_alloc)]
 use alloc::vec::Vec;
+#[cfg(has_extern_crate_alloc)]
 use core::iter::{Chain, Rev};
+#[cfg(has_extern_crate_alloc)]
 use core::slice::{Iter as SliceIter, IterMut as SliceIterMut};
+
+#[cfg(not(has_extern_crate_alloc))]
+use std::iter::{Chain, Rev};
+#[cfg(not(has_extern_crate_alloc))]
+use std::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 
 /// A circular buffer-like queue.
 #[derive(Clone, Debug)]
