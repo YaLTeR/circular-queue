@@ -55,10 +55,16 @@ install:
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
   - rustup-init -yv --default-toolchain %channel% --default-host %target%
   - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
+  - if "%channel%" == "stable" (
+      rustup component add rustfmt
+    )
   - rustc -vV
   - cargo -vV
 
 build_script:
+  - if "%channel%" == "stable" (
+      cargo fmt -- --check
+    )
   - cargo build --verbose %cargoflags%
 
 test_script:
