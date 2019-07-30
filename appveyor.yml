@@ -60,7 +60,6 @@ install:
 
 build_script:
   - cargo build --verbose %cargoflags%
-  - cargo build --verbose --examples %cargoflags%
 
 test_script:
   - cargo test --verbose %cargoflags%
