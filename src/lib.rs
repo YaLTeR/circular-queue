@@ -25,10 +25,14 @@
 //! assert_eq!(iter.next(), Some(&2));
 //! ```
 
+#![no_std]
 #![doc(html_root_url = "https://docs.rs/circular-queue/0.2.0")]
 
-use std::iter::{Chain, Rev};
-use std::slice::{Iter as SliceIter, IterMut as SliceIterMut};
+extern crate alloc;
+
+use alloc::vec::Vec;
+use core::iter::{Chain, Rev};
+use core::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 
 /// A circular buffer-like queue.
 #[derive(Clone, Debug)]
