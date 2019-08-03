@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2019-08-02
+
 ### Added
 - `#![no_std]` support on Rust >= `1.36.0`.
 
@@ -19,6 +21,7 @@
 ### Added
 - `CircularQueue::iter_mut()`.
 
-[Unreleased]: https://github.com/YaLTeR/circular-queue/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/YaLTeR/circular-queue/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/YaLTeR/circular-queue/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/YaLTeR/circular-queue/compare/v0.1.2...v0.2.0
 [0.1.2]: https://github.com/YaLTeR/circular-queue/compare/v0.1.1...v0.1.2
