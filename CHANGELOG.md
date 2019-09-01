@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- `PartialEq` and `Eq` implementations for `CircularQueue`.
+
 ## [0.2.1] - 2019-08-02
 
 ### Added
