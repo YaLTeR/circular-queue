@@ -5,6 +5,9 @@
 //!
 //! There's a built-in iterator that goes from the newest items to the oldest ones.
 //!
+//! Two queues are considered equal if iterating over them would yield the same sequence of
+//! elements.
+//!
 //! # Examples
 //!
 //! ```
@@ -247,6 +250,15 @@ impl<T> CircularQueue<T> {
     }
 }
 
+impl<T: PartialEq> PartialEq for CircularQueue<T> {
+    #[inline]
+    fn eq(&self, other: &CircularQueue<T>) -> bool {
+        self.len() == other.len() && self.iter().zip(other.iter()).all(|(a, b)| a == b)
+    }
+}
+
+impl<T: Eq> Eq for CircularQueue<T> {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -371,5 +383,130 @@ mod tests {
         assert_eq!(iter.next(), Some(&()));
         assert_eq!(iter.next(), Some(&()));
         assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn empty_queue_eq() {
+        let q1 = CircularQueue::<i32>::with_capacity(5);
+        let q2 = CircularQueue::<i32>::with_capacity(5);
+        assert_eq!(q1, q2);
+
+        let q3 = CircularQueue::<i32>::with_capacity(6);
+        assert_eq!(q1, q3); // Capacity doesn't matter as long as the same elements are yielded.
+    }
+
+    #[test]
+    fn partially_full_queue_eq() {
+        let mut q1 = CircularQueue::with_capacity(5);
+        q1.push(1);
+        q1.push(2);
+        q1.push(3);
+
+        let mut q2 = CircularQueue::with_capacity(5);
+        q2.push(1);
+        q2.push(2);
+        assert_ne!(q1, q2);
+
+        q2.push(3);
+        assert_eq!(q1, q2);
+
+        q2.push(4);
+        assert_ne!(q1, q2);
+    }
+
+    #[test]
+    fn full_queue_eq() {
+        let mut q1 = CircularQueue::with_capacity(5);
+        q1.push(1);
+        q1.push(2);
+        q1.push(3);
+        q1.push(4);
+        q1.push(5);
+
+        let mut q2 = CircularQueue::with_capacity(5);
+        q2.push(1);
+        q2.push(2);
+        q2.push(3);
+        q2.push(4);
+        q2.push(5);
+
+        assert_eq!(q1, q2);
+    }
+
+    #[test]
+    fn over_full_queue_eq() {
+        let mut q1 = CircularQueue::with_capacity(5);
+        q1.push(1);
+        q1.push(2);
+        q1.push(3);
+        q1.push(4);
+        q1.push(5);
+        q1.push(6);
+        q1.push(7);
+
+        let mut q2 = CircularQueue::with_capacity(5);
+        q2.push(1);
+        q2.push(2);
+        q2.push(3);
+        q2.push(4);
+        q2.push(5);
+        q2.push(6);
+        assert_ne!(q1, q2);
+
+        q2.push(7);
+        assert_eq!(q1, q2);
+
+        q2.push(8);
+        assert_ne!(q1, q2);
+
+        q2.push(3);
+        q2.push(4);
+        q2.push(5);
+        q2.push(6);
+        q2.push(7);
+        assert_eq!(q1, q2);
+    }
+
+    #[test]
+    fn clear_eq() {
+        let mut q1 = CircularQueue::with_capacity(5);
+        q1.push(1);
+        q1.push(2);
+        q1.push(3);
+        q1.push(4);
+        q1.push(5);
+        q1.push(6);
+        q1.push(7);
+        q1.clear();
+
+        let mut q2 = CircularQueue::with_capacity(5);
+        assert_eq!(q1, q2);
+
+        q2.push(1);
+        q2.clear();
+        assert_eq!(q1, q2);
+    }
+
+    #[test]
+    fn zero_sized_eq() {
+        let mut q1 = CircularQueue::with_capacity(3);
+        q1.push(());
+        q1.push(());
+        q1.push(());
+        q1.push(());
+
+        let mut q2 = CircularQueue::with_capacity(3);
+        q2.push(());
+        q2.push(());
+        assert_ne!(q1, q2);
+
+        q2.push(());
+        assert_eq!(q1, q2);
+
+        q2.push(());
+        assert_eq!(q1, q2);
+
+        q2.push(());
+        assert_eq!(q1, q2);
     }
 }
