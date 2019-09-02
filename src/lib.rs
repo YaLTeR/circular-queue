@@ -273,6 +273,7 @@ mod tests {
     fn empty_queue() {
         let q = CircularQueue::<i32>::with_capacity(5);
 
+        assert!(q.is_empty());
         assert_eq!(q.iter().next(), None);
     }
 
@@ -283,6 +284,7 @@ mod tests {
         q.push(2);
         q.push(3);
 
+        assert!(!q.is_empty());
         assert_eq!(q.len(), 3);
 
         let res: Vec<_> = q.iter().map(|&x| x).collect();
