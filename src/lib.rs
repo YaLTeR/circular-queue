@@ -62,6 +62,12 @@ pub type Iter<'a, T> = Chain<Rev<SliceIter<'a, T>>, Rev<SliceIter<'a, T>>>;
 /// A mutable iterator over `CircularQueue<T>`.
 pub type IterMut<'a, T> = Chain<Rev<SliceIterMut<'a, T>>, Rev<SliceIterMut<'a, T>>>;
 
+/// An ascending iterator over `CircularQueue<T>`.
+pub type AscIter<'a, T> = Chain<SliceIter<'a, T>, SliceIter<'a, T>>;
+
+/// An mutable ascending iterator over `CircularQueue<T>`.
+pub type AscIterMut<'a, T> = Chain<SliceIterMut<'a, T>, SliceIterMut<'a, T>>;
+
 impl<T> CircularQueue<T> {
     /// Constructs a new, empty `CircularQueue<T>` with the requested capacity.
     ///
@@ -247,6 +253,59 @@ impl<T> CircularQueue<T> {
     pub fn iter_mut(&mut self) -> IterMut<T> {
         let (a, b) = self.data.split_at_mut(self.insertion_index);
         a.iter_mut().rev().chain(b.iter_mut().rev())
+    }
+
+    /// Returns an ascending iterator over the queue's contents.
+    ///
+    /// The iterator goes from the least recently pushed items to the newest ones.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::with_capacity(3);
+    /// queue.push(1);
+    /// queue.push(2);
+    /// queue.push(3);
+    /// queue.push(4);
+    ///
+    /// let mut iter = queue.asc_iter();
+    ///
+    /// assert_eq!(iter.next(), Some(&2));
+    /// assert_eq!(iter.next(), Some(&3));
+    /// assert_eq!(iter.next(), Some(&4));
+    /// ```
+    #[inline]
+    pub fn asc_iter(&self) -> AscIter<T> {
+        let (a, b) = self.data.split_at(self.insertion_index);
+        b.iter().chain(a.iter())
+    }
+
+    /// Returns a mutable ascending iterator over the queue's contents.
+    ///
+    /// The iterator goes from the least recently pushed items to the newest ones.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::with_capacity(3);
+    /// queue.push(1);
+    /// queue.push(2);
+    /// queue.push(3);
+    /// queue.push(4);
+    ///
+    /// let mut iter = queue.asc_iter_mut();
+    ///
+    /// assert_eq!(iter.next(), Some(&mut 2));
+    /// assert_eq!(iter.next(), Some(&mut 3));
+    /// assert_eq!(iter.next(), Some(&mut 4));
+    /// ```
+    pub fn asc_iter_mut(&mut self) -> AscIterMut<T> {
+        let (a, b) = self.data.split_at_mut(self.insertion_index);
+        b.iter_mut().chain(a.iter_mut())
     }
 }
 
