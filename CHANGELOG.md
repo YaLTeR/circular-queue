@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.2.3] - 2020-09-01
+
+### Added
+- `CircularQueue::asc_iter()` and `asc_iter_mut()` for iterating over the queue
+  items in oldest-to-newest order.
+- Marked `CircularQueue::push()` as `#[inline]`.
+
 ## [0.2.2] - 2019-09-01
 
 ### Added
@@ -26,7 +33,8 @@
 ### Added
 - `CircularQueue::iter_mut()`.
 
-[Unreleased]: https://github.com/YaLTeR/circular-queue/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/YaLTeR/circular-queue/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/YaLTeR/circular-queue/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/YaLTeR/circular-queue/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/YaLTeR/circular-queue/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/YaLTeR/circular-queue/compare/v0.1.2...v0.2.0

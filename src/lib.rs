@@ -29,7 +29,7 @@
 //! ```
 
 #![cfg_attr(has_extern_crate_alloc, no_std)]
-#![doc(html_root_url = "https://docs.rs/circular-queue/0.2.2")]
+#![doc(html_root_url = "https://docs.rs/circular-queue/0.2.3")]
 
 #[cfg(has_extern_crate_alloc)]
 extern crate alloc;
