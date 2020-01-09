@@ -3,10 +3,11 @@
 //! The `CircularQueue<T>` is created with a set capacity, then items are pushed in. When the queue
 //! runs out of capacity, newer items start overwriting the old ones, starting from the oldest.
 //!
-//! There's a built-in iterator that goes from the newest items to the oldest ones.
+//! There are built-in iterators that go from the newest items to the oldest ones and from the
+//! oldest items to the newest ones.
 //!
-//! Two queues are considered equal if iterating over them would yield the same sequence of
-//! elements.
+//! Two queues are considered equal if iterating over them with `iter()` would yield the same
+//! sequence of elements.
 //!
 //! # Examples
 //!

@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.org/YaLTeR/circular-queue.svg?branch=master)](https://travis-ci.org/YaLTeR/circular-queue)
 [![Build Status](https://ci.appveyor.com/api/projects/status/cj95ixknospdfojq/branch/master?svg=true)](https://ci.appveyor.com/project/YaLTeR/circular-queue)
 
-A circular buffer-like queue container. Created with a set capacity. When pushing new items over capacity, old ones get overwritten. Supports iteration in newest to oldest order.
+A circular buffer-like queue container. Created with a set capacity. When pushing new items over capacity, old ones get overwritten. Supports iteration in newest to oldest and in oldest to newest order.
 
 ## License
 
