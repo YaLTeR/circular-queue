@@ -191,6 +191,7 @@ impl<T> CircularQueue<T> {
     /// assert_eq!(iter.next(), Some(&3));
     /// assert_eq!(iter.next(), Some(&2));
     /// ```
+    #[inline]
     pub fn push(&mut self, x: T) {
         if self.data.len() < self.capacity() {
             self.data.push(x);
@@ -303,6 +304,7 @@ impl<T> CircularQueue<T> {
     /// assert_eq!(iter.next(), Some(&mut 3));
     /// assert_eq!(iter.next(), Some(&mut 4));
     /// ```
+    #[inline]
     pub fn asc_iter_mut(&mut self) -> AscIterMut<T> {
         let (a, b) = self.data.split_at_mut(self.insertion_index);
         b.iter_mut().chain(a.iter_mut())
