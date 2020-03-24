@@ -72,10 +72,6 @@ pub type AscIterMut<'a, T> = Chain<SliceIterMut<'a, T>, SliceIterMut<'a, T>>;
 impl<T> CircularQueue<T> {
     /// Constructs a new, empty `CircularQueue<T>` with the requested capacity.
     ///
-    /// # Panics
-    ///
-    /// Panics if the requested capacity is 0.
-    ///
     /// # Examples
     ///
     /// ```
@@ -85,10 +81,6 @@ impl<T> CircularQueue<T> {
     /// ```
     #[inline]
     pub fn with_capacity(capacity: usize) -> Self {
-        if capacity == 0 {
-            panic!("capacity must be greater than 0");
-        }
-
         Self {
             data: Vec::with_capacity(capacity),
             capacity,
@@ -194,6 +186,10 @@ impl<T> CircularQueue<T> {
     /// ```
     #[inline]
     pub fn push(&mut self, x: T) {
+        if self.capacity() == 0 {
+            return;
+        }
+
         if self.data.len() < self.capacity() {
             self.data.push(x);
         } else {
@@ -326,9 +322,24 @@ mod tests {
     use super::*;
 
     #[test]
-    #[should_panic]
     fn zero_capacity() {
-        let _ = CircularQueue::<i32>::with_capacity(0);
+        let mut q = CircularQueue::<i32>::with_capacity(0);
+        assert_eq!(q.len(), 0);
+        assert_eq!(q.capacity(), 0);
+        assert!(q.is_empty());
+
+        q.push(3);
+        q.push(4);
+        q.push(5);
+
+        assert_eq!(q.len(), 0);
+        assert_eq!(q.capacity(), 0);
+        assert!(q.is_empty());
+
+        assert_eq!(q.iter().count(), 0);
+        assert_eq!(q.asc_iter().count(), 0);
+
+        q.clear();
     }
 
     #[test]
