@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Changed
+- `CircularQueue::with_capacity()` now accepts zero capacity without panicking.
+
 ## [0.2.3] - 2020-09-01
 
 ### Added
