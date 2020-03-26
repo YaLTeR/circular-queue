@@ -5,7 +5,7 @@
 ### Changed
 - `CircularQueue::with_capacity()` now accepts zero capacity without panicking.
 
-## [0.2.3] - 2020-09-01
+## [0.2.3] - 2020-01-09
 
 ### Added
 - `CircularQueue::asc_iter()` and `asc_iter_mut()` for iterating over the queue
