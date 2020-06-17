@@ -1,12 +1,11 @@
 extern crate serde;
-extern crate serde_test;
 
 use super::*;
 
-use self::serde::de::{Error, SeqAccess, Visitor};
+use self::serde::de::{Error, MapAccess, SeqAccess, Visitor};
 use self::serde::export::fmt;
 use self::serde::export::PhantomData;
-use self::serde::ser::{Serialize, SerializeSeq, SerializeTupleStruct, Serializer};
+use self::serde::ser::{Serialize, SerializeSeq, SerializeStruct, Serializer};
 use self::serde::{Deserialize, Deserializer};
 
 /// Struct used to hold the iterator over the data for serialization
@@ -44,33 +43,24 @@ where
             values: self.asc_iter(),
         };
 
-        let mut seq = serializer.serialize_tuple_struct("CircularQueue", 2)?;
-        seq.serialize_field(&self.capacity)?;
-        seq.serialize_field(&to_ser)?;
+        let mut seq = serializer.serialize_struct("CircularQueue", 2)?;
+        seq.serialize_field("capacity", &self.capacity)?;
+        seq.serialize_field("values", &to_ser)?;
         seq.end()
     }
 }
 
-#[derive(Debug)]
-/// `serde::de::Visitor` for the internals (data) of a circular queue
-struct CircularQueueDataVisitor<T> {
-    capacity: usize,
-    marker: PhantomData<fn() -> CircularQueue<T>>,
-}
-
-impl<T> CircularQueueDataVisitor<T> {
-    pub fn new(capacity: usize) -> CircularQueueDataVisitor<T> {
-        CircularQueueDataVisitor {
-            capacity,
-            marker: PhantomData,
-        }
-    }
+#[derive(Deserialize)]
+#[serde(field_identifier, rename_all = "lowercase")]
+enum Field {
+    Capacity,
+    Values,
 }
 
 #[derive(Debug)]
 /// `serde::de::Visitor` for a circular queue
 struct CircularQueueVisitor<T> {
-    marker: PhantomData<fn() -> CircularQueueDataVisitor<T>>,
+    marker: PhantomData<fn() -> CircularQueue<T>>,
 }
 
 impl<T> CircularQueueVisitor<T> {
@@ -91,7 +81,6 @@ where
         write!(formatter, "a circular queue")
     }
 
-    #[inline]
     fn visit_seq<S>(self, mut seq: S) -> Result<Self::Value, S::Error>
     where
         S: SeqAccess<'de>,
@@ -110,6 +99,37 @@ where
         }
         Ok(ret)
     }
+
+    fn visit_map<V>(self, mut map: V) -> Result<Self::Value, V::Error>
+    where
+        V: MapAccess<'de>,
+    {
+        let mut capacity = None;
+        let mut values = None;
+        while let Some(key) = map.next_key()? {
+            match key {
+                Field::Capacity => {
+                    if capacity.is_some() {
+                        return Err(Error::duplicate_field("capacity"));
+                    }
+                    capacity = Some(map.next_value()?);
+                }
+                Field::Values => {
+                    if values.is_some() {
+                        return Err(Error::duplicate_field("values"));
+                    }
+                    values = Some(map.next_value::<Vec<T>>()?);
+                }
+            }
+        }
+        let capacity = capacity.ok_or_else(|| Error::missing_field("capacity"))?;
+        let values = values.ok_or_else(|| Error::missing_field("values"))?;
+        let mut ret = CircularQueue::with_capacity(capacity);
+        for x in values {
+            ret.push(x);
+        }
+        Ok(ret)
+    }
 }
 
 impl<'de, T> Deserialize<'de> for CircularQueue<T>
@@ -120,13 +140,18 @@ where
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_tuple_struct("CircularQueue", 2, CircularQueueVisitor::new())
+        const FIELDS: &'static [&'static str] = &["capacity", "values"];
+        deserializer.deserialize_struct("CircularQueue", FIELDS, CircularQueueVisitor::new())
     }
 }
 
+#[cfg(feature = "serde_support_test")]
 #[cfg(test)]
 mod tests {
     use super::*;
+    extern crate bincode;
+    extern crate serde_json;
+    extern crate serde_test;
 
     use self::serde_test::{assert_tokens, Token};
 
@@ -139,16 +164,18 @@ mod tests {
         assert_tokens(
             &q,
             &[
-                Token::TupleStruct {
+                Token::Struct {
                     name: "CircularQueue",
                     len: 2,
                 },
+                Token::Str("capacity"),
                 Token::U64(8),
+                Token::Str("values"),
                 Token::Seq { len: Some(2) },
                 Token::I32(1),
                 Token::I32(2),
                 Token::SeqEnd,
-                Token::TupleStructEnd,
+                Token::StructEnd,
             ],
         );
     }
@@ -160,14 +187,16 @@ mod tests {
         assert_tokens(
             &q,
             &[
-                Token::TupleStruct {
+                Token::Struct {
                     name: "CircularQueue",
                     len: 2,
                 },
+                Token::Str("capacity"),
                 Token::U64(0),
+                Token::Str("values"),
                 Token::Seq { len: Some(0) },
                 Token::SeqEnd,
-                Token::TupleStructEnd,
+                Token::StructEnd,
             ],
         );
     }
@@ -187,19 +216,60 @@ mod tests {
         assert_tokens(
             &q,
             &[
-                Token::TupleStruct {
+                Token::Struct {
                     name: "CircularQueue",
                     len: 2,
                 },
+                Token::Str("capacity"),
                 Token::U64(4),
+                Token::Str("values"),
                 Token::Seq { len: Some(4) },
                 Token::I32(2),
                 Token::I32(3),
                 Token::I32(4),
                 Token::I32(5),
                 Token::SeqEnd,
-                Token::TupleStructEnd,
+                Token::StructEnd,
             ],
         );
+    }
+
+    #[test]
+    fn serialization_to_json() {
+        let mut q = CircularQueue::with_capacity(4);
+        q.push(3);
+        q.push(7);
+        assert_eq!(
+            serde_json::to_string(&q).unwrap(),
+            r#"{"capacity":4,"values":[3,7]}"#
+        );
+    }
+
+    #[test]
+    fn serialization_from_json() {
+        let mut q = CircularQueue::with_capacity(4);
+        q.push(3);
+        q.push(7);
+        let p =
+            serde_json::from_str::<CircularQueue<i32>>(r#"{"capacity":4,"values":[3,7]}"#).unwrap();
+        assert_eq!(p, q);
+    }
+
+    #[test]
+    fn serialization_from_json_empty() {
+        let mut q = CircularQueue::with_capacity(4);
+        let p =
+            serde_json::from_str::<CircularQueue<i32>>(r#"{"capacity":4,"values":[]}"#).unwrap();
+        assert_eq!(p, q);
+    }
+
+    #[test]
+    fn serialization_to_bincode() {
+        let mut q = CircularQueue::with_capacity(4);
+        q.push(3);
+        q.push(9);
+        let v = bincode::serialize(&q).unwrap();
+        let p = bincode::deserialize::<CircularQueue<i32>>(&v).unwrap();
+        assert_eq!(p, q);
     }
 }

@@ -47,7 +47,7 @@ use std::iter::{Chain, Rev};
 #[cfg(not(has_extern_crate_alloc))]
 use std::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 
-#[cfg(feature = "serde_support")]
+#[cfg(any(feature = "serde_support", feature = "serde_support_test"))]
 pub mod serde_support;
 
 /// A circular buffer-like queue.
