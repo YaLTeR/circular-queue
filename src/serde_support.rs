@@ -3,11 +3,33 @@ extern crate serde_test;
 
 use super::*;
 
-use self::serde::de::{SeqAccess, Visitor};
+use self::serde::de::{Error, SeqAccess, Visitor};
 use self::serde::export::fmt;
 use self::serde::export::PhantomData;
-use self::serde::ser::{Serialize, SerializeSeq, Serializer};
+use self::serde::ser::{Serialize, SerializeSeq, SerializeTupleStruct, Serializer};
 use self::serde::{Deserialize, Deserializer};
+
+/// Struct used to hold the iterator over the data for serialization
+struct CircularQueueSerialize<'a, T> {
+    length: usize,
+    values: AscIter<'a, T>,
+}
+
+impl<'a, T> Serialize for CircularQueueSerialize<'a, T>
+where
+    T: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut seq = serializer.serialize_seq(Some(self.length))?;
+        for e in self.values.clone() {
+            seq.serialize_element(e)?;
+        }
+        seq.end()
+    }
+}
 
 impl<T> Serialize for CircularQueue<T>
 where
@@ -17,18 +39,38 @@ where
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.capacity()))?;
-        for e in self.asc_iter() {
-            seq.serialize_element(e)?;
-        }
+        let to_ser = CircularQueueSerialize {
+            length: self.len(),
+            values: self.asc_iter(),
+        };
+
+        let mut seq = serializer.serialize_tuple_struct("CircularQueue", 2)?;
+        seq.serialize_field(&self.capacity)?;
+        seq.serialize_field(&to_ser)?;
         seq.end()
+    }
+}
+
+#[derive(Debug)]
+/// `serde::de::Visitor` for the internals (data) of a circular queue
+struct CircularQueueDataVisitor<T> {
+    capacity: usize,
+    marker: PhantomData<fn() -> CircularQueue<T>>,
+}
+
+impl<T> CircularQueueDataVisitor<T> {
+    pub fn new(capacity: usize) -> CircularQueueDataVisitor<T> {
+        CircularQueueDataVisitor {
+            capacity,
+            marker: PhantomData,
+        }
     }
 }
 
 #[derive(Debug)]
 /// `serde::de::Visitor` for a circular queue
 struct CircularQueueVisitor<T> {
-    marker: PhantomData<fn() -> CircularQueue<T>>,
+    marker: PhantomData<fn() -> CircularQueueDataVisitor<T>>,
 }
 
 impl<T> CircularQueueVisitor<T> {
@@ -54,11 +96,19 @@ where
     where
         S: SeqAccess<'de>,
     {
-        let mut values = CircularQueue::with_capacity(seq.size_hint().unwrap_or(0));
-        while let Some(value) = seq.next_element()? {
-            values.push(value);
+        let capacity = match seq.next_element()? {
+            Some(val) => val,
+            None => return Err(Error::missing_field("capacity")),
+        };
+        let values = match seq.next_element::<Vec<T>>()? {
+            Some(val) => val,
+            None => return Err(Error::missing_field("values")),
+        };
+        let mut ret = CircularQueue::with_capacity(capacity);
+        for x in values {
+            ret.push(x);
         }
-        Ok(values)
+        Ok(ret)
     }
 }
 
@@ -70,7 +120,7 @@ where
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_seq(CircularQueueVisitor::new())
+        deserializer.deserialize_tuple_struct("CircularQueue", 2, CircularQueueVisitor::new())
     }
 }
 
@@ -89,10 +139,16 @@ mod tests {
         assert_tokens(
             &q,
             &[
-                Token::Seq { len: Some(8) },
+                Token::TupleStruct {
+                    name: "CircularQueue",
+                    len: 2,
+                },
+                Token::U64(8),
+                Token::Seq { len: Some(2) },
                 Token::I32(1),
                 Token::I32(2),
                 Token::SeqEnd,
+                Token::TupleStructEnd,
             ],
         );
     }
@@ -101,7 +157,19 @@ mod tests {
     fn serialization_with_empty_queue() {
         let q = CircularQueue::<()>::with_capacity(0);
 
-        assert_tokens(&q, &[Token::Seq { len: Some(0) }, Token::SeqEnd]);
+        assert_tokens(
+            &q,
+            &[
+                Token::TupleStruct {
+                    name: "CircularQueue",
+                    len: 2,
+                },
+                Token::U64(0),
+                Token::Seq { len: Some(0) },
+                Token::SeqEnd,
+                Token::TupleStructEnd,
+            ],
+        );
     }
 
     #[test]
@@ -119,12 +187,18 @@ mod tests {
         assert_tokens(
             &q,
             &[
+                Token::TupleStruct {
+                    name: "CircularQueue",
+                    len: 2,
+                },
+                Token::U64(4),
                 Token::Seq { len: Some(4) },
                 Token::I32(2),
                 Token::I32(3),
                 Token::I32(4),
                 Token::I32(5),
                 Token::SeqEnd,
+                Token::TupleStructEnd,
             ],
         );
     }
