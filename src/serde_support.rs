@@ -2,9 +2,7 @@ extern crate serde;
 
 use super::*;
 
-use self::serde::de::{Error, MapAccess, SeqAccess, Visitor};
-use self::serde::export::fmt;
-use self::serde::export::PhantomData;
+use self::serde::de::Error;
 use self::serde::ser::{Serialize, SerializeSeq, SerializeStruct, Serializer};
 use self::serde::{Deserialize, Deserializer};
 
@@ -43,7 +41,7 @@ where
             values: self.asc_iter(),
         };
 
-        let mut seq = serializer.serialize_struct("CircularQueue", 2)?;
+        let mut seq = serializer.serialize_struct("CircularQueueData", 2)?;
         seq.serialize_field("capacity", &self.capacity)?;
         seq.serialize_field("values", &to_ser)?;
         seq.end()
@@ -51,85 +49,9 @@ where
 }
 
 #[derive(Deserialize)]
-#[serde(field_identifier, rename_all = "lowercase")]
-enum Field {
-    Capacity,
-    Values,
-}
-
-#[derive(Debug)]
-/// `serde::de::Visitor` for a circular queue
-struct CircularQueueVisitor<T> {
-    marker: PhantomData<fn() -> CircularQueue<T>>,
-}
-
-impl<T> CircularQueueVisitor<T> {
-    pub fn new() -> CircularQueueVisitor<T> {
-        CircularQueueVisitor {
-            marker: PhantomData,
-        }
-    }
-}
-
-impl<'de, T> Visitor<'de> for CircularQueueVisitor<T>
-where
-    T: Deserialize<'de>,
-{
-    type Value = CircularQueue<T>;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        write!(formatter, "a circular queue")
-    }
-
-    fn visit_seq<S>(self, mut seq: S) -> Result<Self::Value, S::Error>
-    where
-        S: SeqAccess<'de>,
-    {
-        let capacity = match seq.next_element()? {
-            Some(val) => val,
-            None => return Err(Error::missing_field("capacity")),
-        };
-        let values = match seq.next_element::<Vec<T>>()? {
-            Some(val) => val,
-            None => return Err(Error::missing_field("values")),
-        };
-        let mut ret = CircularQueue::with_capacity(capacity);
-        for x in values {
-            ret.push(x);
-        }
-        Ok(ret)
-    }
-
-    fn visit_map<V>(self, mut map: V) -> Result<Self::Value, V::Error>
-    where
-        V: MapAccess<'de>,
-    {
-        let mut capacity = None;
-        let mut values = None;
-        while let Some(key) = map.next_key()? {
-            match key {
-                Field::Capacity => {
-                    if capacity.is_some() {
-                        return Err(Error::duplicate_field("capacity"));
-                    }
-                    capacity = Some(map.next_value()?);
-                }
-                Field::Values => {
-                    if values.is_some() {
-                        return Err(Error::duplicate_field("values"));
-                    }
-                    values = Some(map.next_value::<Vec<T>>()?);
-                }
-            }
-        }
-        let capacity = capacity.ok_or_else(|| Error::missing_field("capacity"))?;
-        let values = values.ok_or_else(|| Error::missing_field("values"))?;
-        let mut ret = CircularQueue::with_capacity(capacity);
-        for x in values {
-            ret.push(x);
-        }
-        Ok(ret)
-    }
+struct CircularQueueData<T> {
+    capacity: usize,
+    values: Vec<T>,
 }
 
 impl<'de, T> Deserialize<'de> for CircularQueue<T>
@@ -140,8 +62,23 @@ where
     where
         D: Deserializer<'de>,
     {
-        const FIELDS: &'static [&'static str] = &["capacity", "values"];
-        deserializer.deserialize_struct("CircularQueue", FIELDS, CircularQueueVisitor::new())
+        let mut data = CircularQueueData::deserialize(deserializer)?;
+        // We do not allow the vector to exceed the capacity.
+        if data.values.len() > data.capacity {
+            return Err(Error::invalid_length(
+                data.values.len(),
+                &"serialized vector exceeds capacity of the circular queue",
+            ));
+        }
+        // Grow the vec if needed
+        if data.values.len() < data.capacity {
+            data.values.reserve(data.capacity - data.values.len());
+        }
+        Ok(CircularQueue {
+            data: data.values,
+            capacity: data.capacity,
+            insertion_index: 0,
+        })
     }
 }
 
@@ -165,7 +102,7 @@ mod tests {
             &q,
             &[
                 Token::Struct {
-                    name: "CircularQueue",
+                    name: "CircularQueueData",
                     len: 2,
                 },
                 Token::Str("capacity"),
@@ -188,7 +125,7 @@ mod tests {
             &q,
             &[
                 Token::Struct {
-                    name: "CircularQueue",
+                    name: "CircularQueueData",
                     len: 2,
                 },
                 Token::Str("capacity"),
@@ -217,7 +154,7 @@ mod tests {
             &q,
             &[
                 Token::Struct {
-                    name: "CircularQueue",
+                    name: "CircularQueueData",
                     len: 2,
                 },
                 Token::Str("capacity"),
@@ -271,5 +208,12 @@ mod tests {
         let v = bincode::serialize(&q).unwrap();
         let p = bincode::deserialize::<CircularQueue<i32>>(&v).unwrap();
         assert_eq!(p, q);
+    }
+
+    #[test]
+    fn serialization_with_oversized_vector_fails() {
+        let oversize =
+            serde_json::from_str::<CircularQueue<i32>>(r#"{"capacity":2,"values":[3,7,8]}"#);
+        assert!(oversize.is_err());
     }
 }
