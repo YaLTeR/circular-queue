@@ -2,7 +2,6 @@ extern crate serde;
 
 use super::*;
 
-use self::serde::de::Error;
 use self::serde::ser::{Serialize, SerializeSeq, SerializeStruct, Serializer};
 use self::serde::{Deserialize, Deserializer};
 
@@ -62,23 +61,12 @@ where
     where
         D: Deserializer<'de>,
     {
-        let mut data = CircularQueueData::deserialize(deserializer)?;
-        // We do not allow the vector to exceed the capacity.
-        if data.values.len() > data.capacity {
-            return Err(Error::invalid_length(
-                data.values.len(),
-                &"serialized vector exceeds capacity of the circular queue",
-            ));
+        let data = CircularQueueData::deserialize(deserializer)?;
+        let mut queue = CircularQueue::with_capacity(data.capacity);
+        for elem in data.values {
+            queue.push(elem);
         }
-        // Grow the vec if needed
-        if data.values.len() < data.capacity {
-            data.values.reserve(data.capacity - data.values.len());
-        }
-        Ok(CircularQueue {
-            data: data.values,
-            capacity: data.capacity,
-            insertion_index: 0,
-        })
+        Ok(queue)
     }
 }
 
@@ -211,9 +199,12 @@ mod tests {
     }
 
     #[test]
-    fn serialization_with_oversized_vector_fails() {
+    fn serialization_with_oversized_vector_preserves_last_values() {
+        let mut q = CircularQueue::with_capacity(2);
+        q.push(7);
+        q.push(8);
         let oversize =
-            serde_json::from_str::<CircularQueue<i32>>(r#"{"capacity":2,"values":[3,7,8]}"#);
-        assert!(oversize.is_err());
+            serde_json::from_str::<CircularQueue<i32>>(r#"{"capacity":2,"values":[3,7,8]}"#).unwrap();
+        assert_eq!(oversize,q);
     }
 }
