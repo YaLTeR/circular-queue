@@ -257,7 +257,7 @@ mod tests {
 
     #[test]
     fn serialization_from_json_empty() {
-        let mut q = CircularQueue::with_capacity(4);
+        let q = CircularQueue::with_capacity(4);
         let p =
             serde_json::from_str::<CircularQueue<i32>>(r#"{"capacity":4,"values":[]}"#).unwrap();
         assert_eq!(p, q);

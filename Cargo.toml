@@ -22,7 +22,7 @@ version_check = "0.9"
 [features]
 default = []
 serde_support = ["serde"]
-serde_support_test = ["serde", "serde_test", "serde_json", "bincode"]
+serde_support_test = ["serde_support", "serde_test", "serde_json", "bincode"]
 
 [dependencies]
 serde = {version = "1.0", optional = true, features = ["derive"]}
