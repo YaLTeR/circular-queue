@@ -204,7 +204,8 @@ mod tests {
         q.push(7);
         q.push(8);
         let oversize =
-            serde_json::from_str::<CircularQueue<i32>>(r#"{"capacity":2,"values":[3,7,8]}"#).unwrap();
-        assert_eq!(oversize,q);
+            serde_json::from_str::<CircularQueue<i32>>(r#"{"capacity":2,"values":[3,7,8]}"#)
+                .unwrap();
+        assert_eq!(oversize, q);
     }
 }
