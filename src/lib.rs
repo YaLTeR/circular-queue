@@ -48,7 +48,7 @@ use std::iter::{Chain, Rev};
 use std::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 
 #[cfg(feature = "serde_support")]
-pub mod serde_support;
+mod serde_support;
 
 /// A circular buffer-like queue.
 #[derive(Clone, Debug)]
