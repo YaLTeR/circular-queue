@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.2.5] - 2020-06-21
+
 ### Added
 - Serde support under the `serde_support` feature.
 
@@ -41,7 +43,8 @@
 ### Added
 - `CircularQueue::iter_mut()`.
 
-[Unreleased]: https://github.com/YaLTeR/circular-queue/compare/v0.2.4...HEAD
+[Unreleased]: https://github.com/YaLTeR/circular-queue/compare/v0.2.5...HEAD
+[0.2.5]: https://github.com/YaLTeR/circular-queue/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/YaLTeR/circular-queue/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/YaLTeR/circular-queue/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/YaLTeR/circular-queue/compare/v0.2.1...v0.2.2
