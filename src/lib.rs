@@ -9,6 +9,8 @@
 //! Two queues are considered equal if iterating over them with `iter()` would yield the same
 //! sequence of elements.
 //!
+//! Enable the `serde_support` feature for [Serde](https://serde.rs/) support.
+//!
 //! # Examples
 //!
 //! ```
