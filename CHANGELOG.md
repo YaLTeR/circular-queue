@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Serde support under the `serde_support` feature.
+
 ## [0.2.4] - 2020-03-26
 
 ### Changed
