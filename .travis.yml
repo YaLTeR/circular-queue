@@ -27,7 +27,9 @@ script:
     fi
   - cargo build --verbose
   - cargo test --verbose
-  - cargo build --verbose --features serde_support
-  - cargo test --verbose --features serde_support
-  - cargo build --verbose --features serde_support_test
-  - cargo test --verbose --features serde_support_test
+  - if [ "$TRAVIS_RUST_VERSION" != "1.17.0" ]; then
+      cargo build --verbose --features serde_support &&
+      cargo test --verbose --features serde_support &&
+      cargo build --verbose --features serde_support_test &&
+      cargo test --verbose --features serde_support_test;
+    fi

@@ -75,7 +75,9 @@ test_script:
     )
   - cargo build --verbose
   - cargo test --verbose
-  - cargo build --verbose --features serde_support
-  - cargo test --verbose --features serde_support
-  - cargo build --verbose --features serde_support_test
-  - cargo test --verbose --features serde_support_test
+  - if not "%channel%" == "1.17.0" (
+      cargo build --verbose --features serde_support &&
+      cargo test --verbose --features serde_support &&
+      cargo build --verbose --features serde_support_test &&
+      cargo test --verbose --features serde_support_test &&
+    )
