@@ -81,5 +81,5 @@ test_script:
       cargo build --verbose --features serde_support &&
       cargo test --verbose --features serde_support &&
       cargo build --verbose --features serde_support_test &&
-      cargo test --verbose --features serde_support_test &&
+      cargo test --verbose --features serde_support_test
     )
