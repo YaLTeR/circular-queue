@@ -25,11 +25,9 @@ environment:
   # Nightly 64-bit MSVC
     - channel: nightly
       target: x86_64-pc-windows-msvc
-      #cargoflags: --features "unstable"
   # Nightly 32-bit MSVC
     - channel: nightly
       target: i686-pc-windows-msvc
-      #cargoflags: --features "unstable"
 
 ### GNU Toolchains ###
   # 1.17.0 64-bit GNU
@@ -53,11 +51,9 @@ environment:
   # Nightly 64-bit GNU
     - channel: nightly
       target: x86_64-pc-windows-gnu
-      #cargoflags: --features "unstable"
   # Nightly 32-bit GNU
     - channel: nightly
       target: i686-pc-windows-gnu
-      #cargoflags: --features "unstable"
 
 matrix:
   allow_failures:
@@ -77,7 +73,7 @@ build_script:
   - if "%channel%" == "stable" (
       cargo fmt -- --check
     )
-  - cargo build --verbose %cargoflags%
+  - cargo build --verbose
 
 test_script:
-  - cargo test --verbose %cargoflags%
+  - cargo test --verbose
