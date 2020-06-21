@@ -69,11 +69,13 @@ install:
   - rustc -vV
   - cargo -vV
 
-build_script:
+test_script:
   - if "%channel%" == "stable" (
       cargo fmt -- --check
     )
   - cargo build --verbose
-
-test_script:
   - cargo test --verbose
+  - cargo build --verbose --features serde_support
+  - cargo test --verbose --features serde_support
+  - cargo build --verbose --features serde_support_test
+  - cargo test --verbose --features serde_support_test
