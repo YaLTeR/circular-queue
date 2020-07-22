@@ -130,6 +130,30 @@ impl<T> CircularQueue<T> {
         self.data.is_empty()
     }
 
+    /// Returns `true` if the queue is full.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::with_capacity(5);
+    ///
+    /// assert!(!queue.is_full());
+    ///
+    /// queue.push(1);
+    /// queue.push(2);
+    /// queue.push(3);
+    /// queue.push(4);
+    /// queue.push(5);
+    ///
+    /// assert!(queue.is_full());
+    /// ```
+    #[inline]
+    pub fn is_full(&self) -> bool {
+        self.capacity() == self.len()
+    }
+
     /// Returns the capacity of the queue.
     ///
     /// # Examples
@@ -195,7 +219,7 @@ impl<T> CircularQueue<T> {
             return;
         }
 
-        if self.data.len() < self.capacity() {
+        if !self.is_full() {
             self.data.push(x);
         } else {
             self.data[self.insertion_index] = x;
