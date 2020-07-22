@@ -42,10 +42,14 @@ use alloc::vec::Vec;
 #[cfg(has_extern_crate_alloc)]
 use core::iter::{Chain, Rev};
 #[cfg(has_extern_crate_alloc)]
+use core::mem::replace;
+#[cfg(has_extern_crate_alloc)]
 use core::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 
 #[cfg(not(has_extern_crate_alloc))]
 use std::iter::{Chain, Rev};
+#[cfg(not(has_extern_crate_alloc))]
+use std::mem::replace;
 #[cfg(not(has_extern_crate_alloc))]
 use std::slice::{Iter as SliceIter, IterMut as SliceIterMut};
 
@@ -194,16 +198,20 @@ impl<T> CircularQueue<T> {
     ///
     /// Once the capacity is reached, pushing new items will overwrite old ones.
     ///
+    /// In case an old value is overwritten, it will be returned.
+    ///
     /// # Examples
     ///
     /// ```
     /// use circular_queue::CircularQueue;
     ///
     /// let mut queue = CircularQueue::with_capacity(3);
+    ///
     /// queue.push(1);
     /// queue.push(2);
-    /// queue.push(3);
-    /// queue.push(4);
+    ///
+    /// assert_eq!(queue.push(3), None);
+    /// assert_eq!(queue.push(4), Some(1));
     ///
     /// assert_eq!(queue.len(), 3);
     ///
@@ -214,18 +222,22 @@ impl<T> CircularQueue<T> {
     /// assert_eq!(iter.next(), Some(&2));
     /// ```
     #[inline]
-    pub fn push(&mut self, x: T) {
+    pub fn push(&mut self, x: T) -> Option<T> {
+        let mut old = None;
+
         if self.capacity() == 0 {
-            return;
+            return old;
         }
 
         if !self.is_full() {
             self.data.push(x);
         } else {
-            self.data[self.insertion_index] = x;
+            old = Some(replace(&mut self.data[self.insertion_index], x));
         }
 
         self.insertion_index = (self.insertion_index + 1) % self.capacity();
+
+        old
     }
 
     /// Returns an iterator over the queue's contents.
