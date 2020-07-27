@@ -78,6 +78,9 @@ pub type AscIter<'a, T> = Chain<SliceIter<'a, T>, SliceIter<'a, T>>;
 /// An mutable ascending iterator over `CircularQueue<T>`.
 pub type AscIterMut<'a, T> = Chain<SliceIterMut<'a, T>, SliceIterMut<'a, T>>;
 
+/// A value popped from `CircularQueue<T>` as the result of a push operation.
+pub type Popped<T> = Option<T>;
+
 impl<T> CircularQueue<T> {
     /// Constructs a new, empty `CircularQueue<T>` with the requested capacity.
     ///
@@ -222,7 +225,7 @@ impl<T> CircularQueue<T> {
     /// assert_eq!(iter.next(), Some(&2));
     /// ```
     #[inline]
-    pub fn push(&mut self, x: T) -> Option<T> {
+    pub fn push(&mut self, x: T) -> Popped<T> {
         let mut old = None;
 
         if self.capacity() == 0 {
