@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Added
+- `CircularQueue::is_full()` for checking whether the queue is completely filled.
+
+### Changed
+- `CircularQueue::push()` now returns the element it overwrites, if any.
+
 ## [0.2.5] - 2020-06-21
 
 ### Added
