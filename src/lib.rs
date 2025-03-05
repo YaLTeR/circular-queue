@@ -350,6 +350,31 @@ impl<T> CircularQueue<T> {
         let (a, b) = self.data.split_at_mut(self.insertion_index);
         b.iter_mut().chain(a.iter_mut())
     }
+
+    /// Converts the queue into a `Vec<T>` going from the most recently pushed items to the oldest
+    /// ones.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use circular_queue::CircularQueue;
+    ///
+    /// let mut queue = CircularQueue::with_capacity(3);
+    /// queue.push(1);
+    /// queue.push(2);
+    /// queue.push(3);
+    /// queue.push(4);
+    ///
+    /// let v = queue.into_vec();
+    ///
+    /// assert_eq!(v, vec![4, 3, 2]);
+    /// ```
+    #[inline]
+    pub fn into_vec(mut self) -> Vec<T> {
+        self.data[self.insertion_index..].reverse(); // Reverse the upper part.
+        self.data[..self.insertion_index].reverse(); // Reverse the lower part.
+        self.data
+    }
 }
 
 impl<T: PartialEq> PartialEq for CircularQueue<T> {
@@ -361,9 +386,19 @@ impl<T: PartialEq> PartialEq for CircularQueue<T> {
 
 impl<T: Eq> Eq for CircularQueue<T> {}
 
+#[cfg(has_relaxed_orphan_rule)]
+impl<T> From<CircularQueue<T>> for Vec<T> {
+    #[inline]
+    fn from(queue: CircularQueue<T>) -> Self {
+        queue.into_vec()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(has_extern_crate_alloc)]
+    use alloc::vec;
 
     #[test]
     fn zero_capacity() {
@@ -627,5 +662,38 @@ mod tests {
 
         q2.push(());
         assert_eq!(q1, q2);
+    }
+
+    #[test]
+    fn into_vec() {
+        let mut q = CircularQueue::with_capacity(4);
+        q.push(1);
+        q.push(2);
+        q.push(3);
+
+        let v = q.clone().into_vec();
+        assert_eq!(v, vec![3, 2, 1]);
+
+        q.push(4);
+        q.push(5);
+        let v = q.clone().into_vec();
+        assert_eq!(v, vec![5, 4, 3, 2]);
+
+        q.push(6);
+        let v = q.into_vec();
+        assert_eq!(v, vec![6, 5, 4, 3]);
+    }
+
+    #[cfg(has_relaxed_orphan_rule)]
+    #[test]
+    fn vec_from() {
+        let mut q = CircularQueue::with_capacity(3);
+        q.push(1);
+        q.push(2);
+        q.push(3);
+        q.push(4);
+
+        let v = Vec::from(q);
+        assert_eq!(v, vec![4, 3, 2]);
     }
 }
