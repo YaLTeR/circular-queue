@@ -5,6 +5,7 @@ authors = ["Ivan Molodetskikh <yalterz@gmail.com>"]
 description = "A circular buffer-like queue."
 license = "MIT/Apache-2.0"
 build = "build.rs"
+edition = "2015"
 
 readme = "README.md"
 documentation = "https://docs.rs/circular-queue"
