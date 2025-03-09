@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 1 * *' # Monthly
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+
+      matrix:
+        label:
+          - Linux
+          - Windows
+          - macOS
+
+        rust:
+          # Should be 1.17.0, but the cargo registry broke backwards compatibility:
+          # https://github.com/rust-lang/cargo/issues/14237
+          #
+          # It's possible to build on 1.17.0 by removing all serde dependencies and features.
+          - 1.19.0
+          - stable
+          - beta
+
+        include:
+          - label: Linux
+            os: ubuntu-24.04
+
+          - label: Windows
+            os: windows-2022
+
+          - label: macOS
+            os: macOS-14
+
+        exclude:
+          # aarch64 doesn't exist for Rust this old.
+          - label: macOS
+            rust: 1.19.0
+
+    name: test - ${{ matrix.rust }} - ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        show-progress: false
+
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ matrix.rust }}
+
+    - name: Build
+      run: cargo build
+
+    - name: Test
+      run: cargo test
+
+    - name: Build (serde_support)
+      if: matrix.rust != '1.19.0'
+      run: cargo build --features serde_support
+
+    - name: Test (serde_support)
+      if: matrix.rust != '1.19.0'
+      run: cargo test --features serde_support
+
+    - name: Build (serde_support_test)
+      if: matrix.rust != '1.19.0'
+      run: cargo build --features serde_support_test
+
+    - name: Test (serde_support_test)
+      if: matrix.rust != '1.19.0'
+      run: cargo test --features serde_support_test
+
+  clippy:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        show-progress: false
+
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy
+
+    - name: Run clippy
+      run: cargo clippy --all --all-targets
+
+  rustfmt:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        show-progress: false
+
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt
+
+    - name: Run rustfmt
+      run: cargo fmt --all -- --check
