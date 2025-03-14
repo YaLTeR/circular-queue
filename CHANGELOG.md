@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [0.2.7] - 2025-03-14
+
+### Added
+- `CircularQueue::into_vec()` for converting into a `Vec` without extra allocations.
+- A corresponding `From` impl.
+
+### Fixed
+- Warnings on newer Rust versions.
+
 ## [0.2.6] - 2020-07-27
 
 ### Added
@@ -51,7 +60,8 @@
 ### Added
 - `CircularQueue::iter_mut()`.
 
-[Unreleased]: https://github.com/YaLTeR/circular-queue/compare/v0.2.6...HEAD
+[Unreleased]: https://github.com/YaLTeR/circular-queue/compare/v0.2.7...HEAD
+[0.2.7]: https://github.com/YaLTeR/circular-queue/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/YaLTeR/circular-queue/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/YaLTeR/circular-queue/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/YaLTeR/circular-queue/compare/v0.2.3...v0.2.4
